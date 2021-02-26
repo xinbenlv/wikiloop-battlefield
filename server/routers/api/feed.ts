@@ -9,6 +9,17 @@ const express = require('express');
 
 export const feedRouter = express.Router();
 
+export interface FeedResponse {
+  useMixer: boolean,
+  feed: string,
+  wikiRevIds: string[],
+}
+
+export interface FeedRequest {
+  wiki: string, 
+  limit: number,
+}
+
 feedRouter.get('/mix', async (req, res) => {
   const weighted = require('weighted');
 
@@ -29,6 +40,7 @@ feedRouter.get('/mix', async (req, res) => {
     limit: parseInt(req.query.limit) || 50,
   };
 
+  /* eslint-disable no-fallthrough */
   switch (feed) {
   case 'us2020':
   case 'covid19': // fall through
@@ -41,12 +53,14 @@ feedRouter.get('/mix', async (req, res) => {
     break;
   case 'lastbad': // fall through
     ctx.bad = true;
-  case 'recent': // fall through
+  case 'recent': // fall through 
   default:
     wikiRevIds = (await MwActionApiClient.getLatestRevisionIds(ctx))
         .map((revId) => `${ctx.wiki}:${revId}`);
     break;
   }
+  /* eslint-enable no-fallthrough */
+
   res.send({
     useMixer: true,
     feed,
@@ -54,6 +68,12 @@ feedRouter.get('/mix', async (req, res) => {
   });
 });
 
+/**
+ * Endpoint: `GET api/feed/recent`, `* GET api/feed/lastbad`
+ * 
+ * Get {@link FeedReponse} from feeds of [recent, lastbad]. 
+ * 
+ */
 feedRouter.get(/(recent|lastbad)/, async (req, res) => {
   if (req.query.wiki && !Object.keys(wikiToDomain).includes(req.query.wiki)) {
     res.status(400).send(`The wiki ${req.query.wiki} is not supported`);
@@ -61,7 +81,7 @@ feedRouter.get(/(recent|lastbad)/, async (req, res) => {
     const ctx:any = {
       wiki: req.query.wiki || 'enwiki',
       limit: (parseInt(req.query.limit)) || 50,
-    };
+    } as FeedRequest;
     const feed = req.path.split('/')[1];
     if (feed === 'lastbad') {
       ctx.bad = true;
@@ -73,7 +93,7 @@ feedRouter.get(/(recent|lastbad)/, async (req, res) => {
       useMixer: false,
       feed,
       wikiRevIds,
-    });
+    } as FeedResponse);
   }
 });
 
@@ -119,8 +139,8 @@ feedRouter.post('/:feed', async (req, res) => {
   // Validation
   // TODO(xinbenlv): consider use `express-validator`
   // TODO(xinbenlv): change to MongoDB
-  if (req.params.feed == 'wikitrust' &&
-    (process.env.FEED_WIKITRUST_TOKEN && req.header('WikiLoopToken') == process.env.FEED_WIKITRUST_TOKEN)) {
+  if (req.params.feed === 'wikitrust' &&
+    (process.env.FEED_WIKITRUST_TOKEN && req.header('WikiLoopToken') === process.env.FEED_WIKITRUST_TOKEN)) {
     const mongoose = require('mongoose');
     await mongoose.connection.db.collection('WatchCollection_WIKITRUST')
         .insertMany(req.body.content);
@@ -151,8 +171,8 @@ const ingestRevisionHandler = asyncHandler(async (req, res) => {
   feedRevisionItem.pageId = parseInt(req.query.pageId);
 
   const now = new Date();
-  if (req.query.feed == 'wikitrust' &&
-    (process.env.FEED_WIKITRUST_TOKEN && req.header('WikiLoopToken') == process.env.FEED_WIKITRUST_TOKEN)) {
+  if (req.query.feed === 'wikitrust' &&
+    (process.env.FEED_WIKITRUST_TOKEN && req.header('WikiLoopToken') === process.env.FEED_WIKITRUST_TOKEN)) {
     /* TODO: deprecate the WatchCollection W */
     const mongoose = require('mongoose');
     await mongoose.connection.db.collection('WatchCollection_WIKITRUST')
@@ -188,7 +208,7 @@ feedRouter.delete('/:feed', async (req, res) => {
   // Validation
   // TODO(xinbenlv): consider use `express-validator`
   // TODO(xinbenlv): change to MongoDB
-  if (req.params.feed == 'wikitrust' && req.header('WikiLoopToken') == process.env.FEED_WIKITRUST_TOKEN) {
+  if (req.params.feed === 'wikitrust' && req.header('WikiLoopToken') === process.env.FEED_WIKITRUST_TOKEN) {
     const mongoose = require('mongoose');
     try {
       await mongoose.connection.db.collection('WatchCollection_WIKITRUST').drop();

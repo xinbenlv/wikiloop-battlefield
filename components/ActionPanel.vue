@@ -84,6 +84,7 @@
         <h5>{{ $t('Label-Result') }}</h5>
         <template v-if="wikiActionProps.resultRevId">
           <i class="text-success fas fa-check-circle mr-1" /><span>
+            <!-- eslint-disable vue/no-v-html -->
             <span
               v-html="$t('Message-TheRevisionIsSuccessfullyRevertedAs',
                          [
@@ -91,10 +92,12 @@
                            `<a href='${getDiffLinkByRevId(wikiActionProps.resultRevId)}'>${wikiActionProps.resultRevId}</a>`
                          ])"
             />
+            <!-- eslint-enable vue/no-v-html -->
           </span>
         </template>
         <template v-else-if="wikiActionProps && wikiActionProps._meta && wikiActionProps._meta.hasError">
           <i class="text-danger fas fa-times-circle mr-1" />
+          <!-- eslint-disable-next-line vue/no-v-html -->
           <span v-html="$t(`Message-SorryWeFailedToRevert`,[`<a href='${getDiffLinkByRevId(revId)}'>${revId}</a>`])" />
           <span v-if="wikiActionProps._meta.rawResult && wikiActionProps._meta.rawResult.error">
             {{ $t('Label-Reason') }}(<b>{{ wikiActionProps._meta.rawResult.error.code }}</b>) {{ wikiActionProps._meta.rawResult.error.info }}
@@ -125,9 +128,9 @@ export default class ActionPanel extends Vue {
         @Prop({ type: String, required: true }) readonly feed!: string;
 
         $cookiez: NuxtCookies; // TODO remove after dep resolved https://github.com/microcipcip/cookie-universal/issues/63
+        $config:any;
         $axios: NuxtAxiosInstance;
         $t:any;
-        $env:any;
         $bvModal:any;
         $ga:any;
         $bvToast:any;
@@ -199,7 +202,7 @@ export default class ActionPanel extends Vue {
               [
                 '[[:m:WikiLoop DoubleCheck]]',
                 `${version}`,
-                `http://${this.$env.PUBLIC_HOST || 'doublecheck.wikiloop.org'}/revision/${this.wiki}/${this.revId}`,
+                `http://${this.$config.PUBLIC_HOST || 'doublecheck.wikiloop.org'}/revision/${this.wiki}/${this.revId}`,
               ]);
             this.wikiActionProps = {
               fromUserGaId: this.$cookiez.get('_ga'),

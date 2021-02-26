@@ -13,6 +13,7 @@
 // limitations under the License.
 
 module.exports = {
+  globalSetup: '<rootDir>/jest.setup.js', // TODO update it to run only at a TestSuite
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
     '^~/(.*)$': '<rootDir>/$1',
@@ -31,9 +32,22 @@ module.exports = {
     '<rootDir>/pages/**/*.vue',
     '<rootDir>/server/**/*.ts',
     '<rootDir>/shared/**/*.ts',
+    '<rootDir>/store/**/*.js',
   ],
   reporters: [
     'default',
+    [
+      'jest-stare',
+      {
+        'resultDir': 'reports/jest-stare',
+        'reportTitle': 'jest-stare!',
+        'additionalResultsProcessors': [
+          'jest-junit'
+        ],
+        'coverageLink': '../../coverage/lcov-report/index.html',
+        'jestStareConfigJson': 'jest-stare.json'
+      }
+    ],
     ['jest-junit', {
       outputDirectory: './reports/jest/',
       outputName: 'junit.xml',

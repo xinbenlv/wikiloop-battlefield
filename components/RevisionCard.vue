@@ -398,7 +398,7 @@ export default {
     });
   },
   async mounted() {
-    if (this.$env.CROSS_EDIT_CHECK === '1' || this.$route.query.cesp === '1') {
+    if (this.$config.CROSS_EDIT_CHECK === '1' || this.$route.query.cesp === '1') {
       this.enableCesp = true;
       console.log('Cross-edit features is eanbled!');
     } else {
@@ -428,7 +428,7 @@ export default {
       };
       this.CrossEditSuspiciousPatternsInstanceAuthor = new CrossEditSuspiciousPatterns(curRevisionInfoAuthor);
       const decisionInfoAuthor = await this.CrossEditSuspiciousPatternsInstanceAuthor.analyze();
-      if (decisionInfoAuthor.type != '') {
+      if (decisionInfoAuthor.type !== '') {
         this.displayChoiceAuthor = true;
         this.displayHistoryAuthor = true;
         this.choiceInfoAuthor = decisionInfoAuthor;
@@ -451,7 +451,7 @@ export default {
       };
       this.CrossEditSuspiciousPatternsInstanceArticle = new CrossEditSuspiciousPatterns(curRevisionInfoArticle);
       const decisionInfoArticle = await this.CrossEditSuspiciousPatternsInstanceArticle.analyze();
-      if (decisionInfoArticle.type != '') {
+      if (decisionInfoArticle.type !== '') {
         this.displayChoiceArticle = true;
         this.displayHistoryArticle = true;
         this.choiceInfoArticle = decisionInfoArticle;
@@ -461,8 +461,8 @@ export default {
     }
   },
   beforeCreate() {
-    this['getUrlBaseByWiki'] = getUrlBaseByWiki.bind(this); // now you can call this.getUrlBaseByWiki() (in your functions/template)
-    this['fetchDiffWithWikiRevId'] = fetchDiffWithWikiRevId.bind(this); // now you can call this.getUrlBaseByWiki() (in your functions/template)
+    (this as any).getUrlBaseByWiki = getUrlBaseByWiki.bind(this); // now you can call this.getUrlBaseByWiki() (in your functions/template)
+    (this as any).fetchDiffWithWikiRevId = fetchDiffWithWikiRevId.bind(this); // now you can call this.getUrlBaseByWiki() (in your functions/template)
   },
   methods: {
     async loadDiff() {
